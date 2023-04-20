@@ -1,6 +1,41 @@
 <template>
   <div :style="{ background: `url(${bg})` }" class="box">
-    <div class="box-left"></div>
+    <div class="box-left">
+      <div class="box-left-card">
+        <section>
+          <div>较上日+ {{ store.chinaAdd.localConfirmH5 }}</div>
+          <div>{{ store.chinaTotal.localConfirm }}</div>
+          <div>本土现有确诊</div>
+        </section>
+        <section>
+          <div>较上日+ {{ store.chinaAdd.nowConfirm }}</div>
+          <div>{{ store.chinaTotal.nowConfirm }}</div>
+          <div>现有确诊</div>
+        </section>
+        <section>
+          <div>较上日+ {{ store.chinaAdd.confirm }}</div>
+          <div>{{ store.chinaTotal.confirm }}</div>
+          <div>累计确诊</div>
+        </section>
+        <section>
+          <div>较上日+ {{ store.chinaAdd.noInfect }}</div>
+          <div>{{ store.chinaTotal.noInfect }}</div>
+          <div>无症状感染者</div>
+        </section>
+        <section>
+          <div>较上日+ {{ store.chinaAdd.importedCase }}</div>
+          <div>{{ store.chinaTotal.importedCase }}</div>
+          <div>境外输入</div>
+        </section>
+        <section>
+          <div>较上日+ {{ store.chinaAdd.dead }}</div>
+          <div>{{ store.chinaTotal.dead }}</div>
+          <div>累计死亡</div>
+        </section>
+      </div>
+      <div class="box-left-pie"></div>
+      <div class="box-left-line"></div>
+    </div>
     <div id="china" class="box-center"></div>
     <div style="color: white" class="box-right">
       <table class="table" cellspacing="0" border="1">
@@ -41,7 +76,9 @@ const store = useStore()
 
 onMounted(async () => {
   await store.getList()
-  initCharts();
+  initCharts()
+  initPie()
+  initLine()
 })
 
 const initCharts = () => {
@@ -165,6 +202,79 @@ const initCharts = () => {
   })
 }
 
+const initPie = () => {
+  const charts = echarts.init(document.querySelector('.box-left-pie') as HTMLElement)
+  charts.setOption({
+    backgroundColor: "#223651",
+    tooltip: {
+      trigger: 'item'
+    },
+    series: [
+      {
+        type: 'pie',
+        radius: ['40%', '70%'],
+        itemStyle: {
+          borderRadius: 4,
+          borderColor: '#fff',
+          borderWidth: 2
+        },
+        label: {
+          show: true,
+        },
+        emphasis: {
+          label: {
+            show: true,
+            fontSize: '15',
+          }
+        },
+        data: store.cityDetail.map(v => {
+          return {
+            name: v.city,
+            value: v.nowConfirm
+          }
+        })
+      }
+    ]
+  })
+}
+
+const initLine = () => {
+  const charts = echarts.init(document.querySelector('.box-left-line') as HTMLElement)
+  charts.setOption({
+    backgroundColor: "#223651",
+    tooltip: {
+      trigger: 'axis'
+    },
+    xAxis: {
+      type: 'category',
+      data: store.cityDetail.map(v => v.city),
+      axisLine: {
+        lineStyle: {
+          color: "#fff"
+        }
+      }
+    },
+    yAxis: {
+      type: 'value',
+      axisLine: {
+        lineStyle: {
+          color: "#fff"
+        }
+      }
+    },
+    label: {
+      show: true
+    },
+    series: [
+      {
+        data: store.cityDetail.map(v => v.nowConfirm),
+        type: 'line',
+        smooth: true
+      }
+    ]
+  })
+}
+
 
 </script>
 
@@ -173,6 +283,9 @@ const initCharts = () => {
   padding: 0;
   margin: 0;
 }
+@itemColor: #41b0db;
+@itemBg: #223651;
+@itemBorder: #212028;
 .table {
   width: 100%;
   background: #212028;
@@ -199,8 +312,35 @@ body,
   display: flex;
   overflow: hidden;
   padding: 10px;
-  &-left{
+  &-left {
     width: 400px;
+    &-pie {
+      height: 320px;
+      margin-top: 20px;
+    }
+    &-line {
+      height: 320px;
+      margin-top: 20px;
+    }
+    &-card {
+      display: grid;
+      grid-template-columns: auto auto auto;
+      grid-template-rows: auto auto;
+      section {
+        background: @itemBg;
+        border: 1px solid @itemBorder;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        div:nth-child(2) {
+          color: @itemColor;
+          padding: 10px 0;
+          font-size: 20px;
+          font-weight: bold;
+        }
+      }
+    }
   }
   &-center {
     flex: 1;
